@@ -1,5 +1,5 @@
 # Multi-stage build for Go backend
-FROM golang:1.23-alpine AS builder
+FROM golang:alpine AS builder
 
 WORKDIR /app
 
@@ -15,12 +15,11 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Generate Swagger documentation
+# Generate Swagger docs first, then tidy and build
 RUN go install github.com/swaggo/swag/cmd/swag@latest && \
-    swag init -g cmd/api/main.go || true
-
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
+    swag init -g cmd/api/main.go || true && \
+    go mod tidy && \
+    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
 
 # Production stage - minimal image
 FROM alpine:latest
