@@ -164,9 +164,14 @@ func setupRouter(db *mongo.Client, cfg config.Config, tokenSvc *auth.TokenServic
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	// Initialize collections
-	todoCollection := db.Database(cfg.DBName).Collection("todos")
-	userCollection := db.Database(cfg.DBName).Collection("users")
+	// Initialize collections (only if database is available)
+	var todoCollection *mongo.Collection
+	var userCollection *mongo.Collection
+	
+	if db != nil {
+		todoCollection = db.Database(cfg.DBName).Collection("todos")
+		userCollection = db.Database(cfg.DBName).Collection("users")
+	}
 
 	// Initialize handlers
 	todoHandler := handlers.NewTodoHandler(todoCollection)
