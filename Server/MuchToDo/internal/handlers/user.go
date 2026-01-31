@@ -57,11 +57,6 @@ func NewUserHandler(collection *mongo.Collection, todoCollection *mongo.Collecti
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /auth/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "User registration requires database connectivity"})
-		return
-	}
-
 	var dto models.RegisterUserDTO
 	if err := c.ShouldBindJSON(&dto); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -121,11 +116,6 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Login requires database connectivity"})
-		return
-	}
-
 	var dto models.LoginUserDTO
 	if err := c.ShouldBindJSON(&dto); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -193,10 +183,7 @@ func (h *UserHandler) Logout(c *gin.Context) {
 // @Failure      409  {object}  map[string]string "Username is already taken"
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /users/me [put]
-func (h *UserHandler) UpdateUser(c *gin.Context) {	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "User update requires database connectivity"})
-		return
-	}
+func (h *UserHandler) UpdateUser(c *gin.Context) {
 	userIDHex, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -284,11 +271,6 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {	if h.collection == nil {
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /users/me/password [put]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Password change requires database connectivity"})
-		return
-	}
-
 	userIDHex, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -355,11 +337,6 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /users/me [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
-	if h.collection == nil || h.dbClient == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Account deletion requires database connectivity"})
-		return
-	}
-
 	userIDHex, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -429,11 +406,6 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 // @Failure      500  {object}  map[string]string "Database error"
 // @Router       /auth/username-check/{username} [get]
 func (h *UserHandler) CheckUsernameAvailability(c *gin.Context) {
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Username check requires database connectivity"})
-		return
-	}
-
 	// Trigger a random cache refresh in the background
 	h.triggerRandomCacheRefresh()
 
@@ -482,11 +454,6 @@ func (h *UserHandler) CheckUsernameAvailability(c *gin.Context) {
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /users/me [get]
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Profile retrieval requires database connectivity"})
-		return
-	}
-
 	userIDHex, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})

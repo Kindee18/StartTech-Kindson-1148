@@ -1,23 +1,79 @@
-bin
-.env
-.env.local
-.env.*.local
-*.log
-.DS_Store
-.vscode
-.idea
+# Version control
+.git
+.gitignore
+.github
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+
+# IDE/Editor
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
-.git
-.gitignore
-README.md
-Makefile
-docker-compose.yaml
-coverage
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+bin/
+*.o
+*.a
+*.so
+*.exe
+*.exe~
+*.dll
+*.dylib
+
+# Test files
 *.test
 *.out
-docs/
-internal/*_test.go
-cmd/*/tmp/
+coverage.*
+*.coverprofile
+
+# Environment files (security - don't include in image)
+.env
+.env.local
+.env.*.local
+.env.example
+.env.production
+
+# Dependencies (will be downloaded during build)
+vendor/
+
+# Build configuration
+Makefile
 .air.toml
+
+# Docker composition files
+docker-compose.yaml
+docker-compose.prod.yml
+
+# Keys and certificates
+*.key
+*.pem
+*.crt
+*.pub
+mongodb.key/
+
+# Temporary
+tmp/
+temp/
+*.tmp
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if any frontend tooling)
+node_modules/
+
+# Dev tools
+*.swp
+*.swo
+*~

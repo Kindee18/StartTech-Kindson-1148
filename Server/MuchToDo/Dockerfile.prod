@@ -1,0 +1,56 @@
+# Production-optimized Multi-stage build for Go backend
+# Minimal image size, no Swagger docs, security-hardened
+
+FROM golang:1.25-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache git make
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the application
+# CGO_ENABLED=0: Disable cgo for static binary
+# -installsuffix cgo: Add suffix to avoid linker conflicts
+# -ldflags: Pass linker flags to remove debug symbols
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -a \
+    -installsuffix cgo \
+    -ldflags="-w -s" \
+    -o main ./cmd/api
+
+# Production stage - minimal distroless image for security
+FROM alpine:3.19
+
+# Install only runtime dependencies
+RUN apk --no-cache add ca-certificates wget tzdata
+
+WORKDIR /root/
+
+# Copy binary from builder
+COPY --from=builder /app/main .
+
+# Create non-root user for security (optional but recommended)
+RUN addgroup -g 1000 app && \
+    adduser -D -u 1000 -G app app
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1
+
+# Run as non-root user
+USER app
+
+# Run the application
+CMD ["./main"]

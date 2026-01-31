@@ -47,14 +47,10 @@ func (h *HealthHandler) CheckHealth(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	if h.dbClient != nil {
-		if err := h.dbClient.Ping(ctx, nil); err == nil {
-			status["database"] = "ok"
-		} else {
-			isHealthy = false
-		}
+	if err := h.dbClient.Ping(ctx, nil); err == nil {
+		status["database"] = "ok"
 	} else {
-		status["database"] = "not connected"
+		isHealthy = false
 	}
 
 	// --- Check Cache (if enabled) ---

@@ -54,11 +54,6 @@ func getUserIDFromContext(c *gin.Context) (primitive.ObjectID, error) {
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /todos [post]
 func (h *TodoHandler) CreateTodo(c *gin.Context) {
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Todo features require database connectivity"})
-		return
-	}
-
 	userID, err := getUserIDFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
@@ -147,10 +142,7 @@ func (h *TodoHandler) GetAllTodos(c *gin.Context) {
 // @Failure      404  {object}  map[string]string "Todo not found"
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /todos/{id} [get]
-func (h *TodoHandler) GetTodoByID(c *gin.Context) {	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Todo features require database connectivity"})
-		return
-	}
+func (h *TodoHandler) GetTodoByID(c *gin.Context) {
 	userID, err := getUserIDFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
@@ -194,11 +186,6 @@ func (h *TodoHandler) GetTodoByID(c *gin.Context) {	if h.collection == nil {
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /todos/{id} [put]
 func (h *TodoHandler) UpdateTodo(c *gin.Context) {
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Todo features require database connectivity"})
-		return
-	}
-
 	userID, err := getUserIDFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
@@ -262,15 +249,7 @@ func (h *TodoHandler) UpdateTodo(c *gin.Context) {
 // @Failure      404  {object}  map[string]string "Todo not found"
 // @Failure      500  {object}  map[string]string "Server error"
 // @Router       /todos/{id} [delete]
-func (h *TodoHandler) DeleteTodo(c *gin.Context) {	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Todo features require database connectivity"})
-		return
-	}
-	if h.collection == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Database unavailable", "message": "Todo features require database connectivity"})
-		return
-	}
-
+func (h *TodoHandler) DeleteTodo(c *gin.Context) {
 	userID, err := getUserIDFromContext(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})

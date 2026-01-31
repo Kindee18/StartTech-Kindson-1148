@@ -59,20 +59,17 @@ func main() {
 	slog.Info("Logger initialized", "level", cfg.LogLevel, "format", cfg.LogFormat)
 
 	// 2. Connect to Database
-	var dbClient *mongo.Client
-	dbClient, err = database.ConnectMongo(cfg.MongoURI, cfg.DBName)
+	dbClient, err := database.ConnectMongo(cfg.MongoURI, cfg.DBName)
 	if err != nil {
-		slog.Warn("could not connect to MongoDB - proceeding without database", slog.Any("error", err))
-		slog.Warn("NOTE: Database features will not be available. Set a valid MONGODB_URI to enable.")
-		dbClient = nil  // Set to nil to indicate no database connection
-	} else {
-		defer func() {
-			if err = dbClient.Disconnect(context.Background()); err != nil {
-				slog.Error("Error disconnecting from MongoDB", slog.Any("error", err))
-			}
-		}()
-		slog.Info("Successfully connected to MongoDB.")
+		slog.Error("could not connect to MongoDB", slog.Any("error", err))
+		os.Exit(1)
 	}
+	defer func() {
+		if err = dbClient.Disconnect(context.Background()); err != nil {
+			slog.Error("Error disconnecting from MongoDB", slog.Any("error", err))
+		}
+	}()
+	slog.Info("Successfully connected to MongoDB.")
 
 	// 3. Initialize Services (Cache, Auth)
 	cacheService := cache.NewCacheService(cfg)
@@ -89,13 +86,8 @@ func main() {
 }
 
 // preloadUsernamesIntoCache queries for all usernames and loads them into the cache,
-// but only if caching is enabled, dbClient is connected, and a sentinel key indicates the cache is empty.
+// but only if caching is enabled and a sentinel key indicates the cache is empty.
 func preloadUsernamesIntoCache(db *mongo.Client, cacheSvc cache.Cache, cfg config.Config) {
-	if db == nil {
-		slog.Info("Database not connected. Skipping username preloading.")
-		return
-	}
-
 	if !cfg.EnableCache {
 		slog.Info("Caching is disabled. Skipping username preloading.")
 		return
@@ -164,14 +156,9 @@ func setupRouter(db *mongo.Client, cfg config.Config, tokenSvc *auth.TokenServic
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	// Initialize collections (only if database is available)
-	var todoCollection *mongo.Collection
-	var userCollection *mongo.Collection
-	
-	if db != nil {
-		todoCollection = db.Database(cfg.DBName).Collection("todos")
-		userCollection = db.Database(cfg.DBName).Collection("users")
-	}
+	// Initialize collections
+	todoCollection := db.Database(cfg.DBName).Collection("todos")
+	userCollection := db.Database(cfg.DBName).Collection("users")
 
 	// Initialize handlers
 	todoHandler := handlers.NewTodoHandler(todoCollection)

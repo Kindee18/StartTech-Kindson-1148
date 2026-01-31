@@ -1,0 +1,72 @@
+version: "3.9"
+
+# Production Docker Compose Configuration
+# Uses AWS services (RDS/MongoDB Atlas, ElastiCache) instead of local containers
+# Only runs the backend application container
+
+services:
+  backend:
+    image: starttech-backend:latest
+    container_name: starttech-backend
+    restart: always
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+
+    # Environment variables from AWS deployment
+    environment:
+      PORT: ${PORT:-8080}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      MONGO_URI: ${MONGO_URI}
+      DB_NAME: ${DB_NAME:-much_todo_db}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-72}
+      ENABLE_CACHE: ${ENABLE_CACHE:-true}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      COOKIE_DOMAINS: ${COOKIE_DOMAINS}
+      SECURE_COOKIE: ${SECURE_COOKIE:-true}
+
+    # Health check for container orchestration
+    healthcheck:
+      test:
+        - "CMD"
+        - "wget"
+        - "--no-verbose"
+        - "--tries=1"
+        - "--spider"
+        - "http://localhost:8080/health"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+    # CloudWatch Logs driver for AWS deployment
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: ${CLOUDWATCH_LOG_GROUP:-/aws/ec2/starttech/backend}
+        awslogs-region: ${AWS_REGION:-us-east-1}
+        awslogs-stream: ${CLOUDWATCH_LOG_STREAM:-production}
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+# Networks
+networks:
+  default:
+    name: starttech-prod
+    driver: bridge

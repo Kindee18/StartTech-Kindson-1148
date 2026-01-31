@@ -4,13 +4,13 @@
 
 1. [System Overview](#system-overview)
 2. [Architecture](#architecture)
-3. [GitHub Actions OIDC Setup](#github-actions-oidc-setup)
-4. [CI/CD Pipeline](#cicd-pipeline)
+3. [CI/CD Pipeline](#cicd-pipeline)
+4. [GitHub Secrets Configuration](#github-secrets-configuration)
 5. [Deployment Procedures](#deployment-procedures)
 6. [Monitoring & Logging](#monitoring--logging)
 7. [Troubleshooting](#troubleshooting)
 8. [Rollback Procedures](#rollback-procedures)
-9. [Emergency Contacts](#emergency-contacts)
+9. [Emergency Procedures](#emergency-procedures)
 
 ---
 
@@ -20,14 +20,17 @@
 
 - **Frontend**: React SPA hosted on S3 with CloudFront CDN
 - **Backend**: Go API running on EC2 instances with Auto Scaling
-- **Database**: MongoDB Atlas cluster
-- **Cache**: AWS ElastiCache Redis
-- **Load Balancer**: Application Load Balancer (ALB)
-- **Deployment**: AWS CodeDeploy
+- **Database**: MongoDB Atlas cluster for data persistence
+- **Cache**: AWS ElastiCache Redis for session/cache management
+- **Load Balancer**: Application Load Balancer (ALB) for traffic distribution
+- **CI/CD**: GitHub Actions for automated build and deployment
+- **Registry**: ECR (Elastic Container Registry) for Docker images
+- **Monitoring**: CloudWatch for logs, metrics, and alarms
 
 ### Environments
 
-- **Staging**: `develop` branch → staging resources
+- **Development**: `develop` branch → dev resources
+- **Staging**: Manual promotion to staging resources
 - **Production**: `main` branch → production resources
 
 ---
@@ -40,18 +43,173 @@ CloudFront (CDN)
 S3 (Frontend Static Files)
 
 Internet → ALB → EC2 Auto Scaling Group (Backend API)
-                      ↓
-                  ElastiCache Redis
-                      ↓
-                  MongoDB Atlas
+    ↓                    ↓
+HTTPS                ElastiCache Redis (Sessions)
+                         ↓
+                    MongoDB Atlas (Data)
 ```
 
-### Infrastructure
+### Infrastructure Components
+
+#### Frontend Stack
+
+- **S3 Bucket**: Stores minified React static files
+- **CloudFront**: CDN for global content delivery
+- **Cache Invalidation**: Automatic after deployments
+- **HTTPS**: TLS/SSL via CloudFront
+
+#### Backend Stack
+
+- **EC2 Instances**: Runs Go application in Docker
+- **ALB**: Routes traffic to healthy instances
+- **Auto Scaling Group**: Scales 2-6 instances based on CPU
+- **ECR**: Stores Docker images
+- **Security Groups**: Restrict traffic to necessary ports
+- **IAM Roles**: Grant permissions to access AWS services
+
+#### Data Layer
+
+- **MongoDB Atlas**: Cloud-hosted MongoDB for persistence
+- **Redis ElastiCache**: In-memory cache for sessions and hot data
+- **AWS Secrets Manager**: Stores credentials securely
+
+#### Observability
+
+- **CloudWatch Logs**: Centralized logging for all services
+- **CloudWatch Metrics**: Performance and operational metrics
+- **CloudWatch Alarms**: Alerts for critical conditions
+- **CloudWatch Dashboard**: Visual monitoring of system health
 
 - **VPC**: Isolated network environment
 - **Subnets**: Public (ALB) and Private (EC2 instances)
 - **Security Groups**: Restrict traffic between components
 - **IAM Roles**: EC2 instance profiles for AWS service access
+
+---
+
+## CI/CD Pipeline
+
+### Frontend Deployment Pipeline
+
+**Trigger:** Push/PR to main or develop branch in Client/ directory
+
+**Stages:**
+
+1. **Test & Lint**
+   - Setup Node.js 20
+   - Install dependencies (`npm ci`)
+   - Run ESLint (`npm run lint`)
+   - Run unit tests (`npm run test`)
+   - Security audit (`npm audit`)
+
+2. **Build & Deploy** (Only on push to main/develop)
+   - Configure AWS credentials
+   - Set environment variables based on branch
+   - Install dependencies
+   - Build production bundle (`npm run build`)
+   - Sync build files to S3 (with proper cache control headers)
+   - Create CloudFront invalidation for CDN
+
+3. **Health Checks**
+   - Wait 30 seconds for deployment
+   - Check website health (curl with retries)
+   - Verify CloudFront cache invalidation
+
+**Success Criteria:**
+
+- All tests pass
+- Security audit passes
+- Build completes without errors
+- S3 sync succeeds
+- CloudFront invalidation succeeds
+- Health checks pass
+
+### Backend Deployment Pipeline
+
+**Trigger:** Push/PR to main or develop branch in Server/ directory
+
+**Stages:**
+
+1. **Test & Scan**
+   - Setup Go 1.25.1
+   - Download dependencies
+   - Run unit tests with race detection (`go test -race`)
+   - Generate coverage report
+   - Check code formatting (`gofmt`)
+   - Run go vet for potential bugs
+   - Security scan with gosec
+
+2. **Build & Package** (Only on push to main/develop)
+   - Build Go binary (Linux x86_64)
+   - Login to ECR
+   - Build Docker image
+   - Scan image with Trivy for vulnerabilities
+   - Push to ECR with tags: commit hash + environment + latest
+
+3. **Deploy** (Only on push to main)
+   - Get Auto Scaling Group name
+   - Update ASG with new Docker image
+   - Start instance refresh (rolling update)
+   - Wait for deployment
+   - Run smoke tests (health endpoint)
+   - Send Slack notifications
+
+**Success Criteria:**
+
+- All tests pass (50% code coverage minimum)
+- Go vet passes
+- Formatting is correct
+- Docker image builds successfully
+- Security scan passes
+- Deployment succeeds
+- Smoke tests pass
+
+---
+
+## GitHub Secrets Configuration
+
+### Required Secrets for Application Repository
+
+Add these secrets in GitHub Settings → Secrets and variables → Actions:
+
+```
+# AWS Configuration
+AWS_REGION=us-east-1
+AWS_ACCOUNT_ID=XXXXXXXXXXXX
+
+# Frontend Deployment
+S3_BUCKET_PROD=muchtodo-frontend-prod-ACCOUNT_ID
+S3_BUCKET_STAGING=muchtodo-frontend-staging-ACCOUNT_ID
+CLOUDFRONT_ID_PROD=E1234567890ABCDE
+CLOUDFRONT_ID_STAGING=E0987654321XYZAB
+
+# Backend Deployment
+ECR_REPOSITORY_BACKEND=muchtodo-backend
+CODEDEPLOY_APP=muchtodo-app
+CODEDEPLOY_GROUP_PROD=muchtodo-prod-group
+CODEDEPLOY_GROUP_STAGING=muchtodo-staging-group
+CODEDEPLOY_S3_BUCKET=muchtodo-codedeploy-artifacts
+
+# API Configuration
+API_BASE_URL_PROD=https://api.muchtodo.com
+API_BASE_URL_STAGING=https://api-staging.muchtodo.com
+VITE_API_BASE_URL=${{ secrets.API_BASE_URL_PROD }}
+
+# Database
+MONGODB_HOST=mongodb.muchtodo.mongodb.net
+MONGODB_PORT=27017
+MONGODB_DATABASE=muchtodo
+
+# Cache
+REDIS_HOST=redis.XXXXXXXXXXXX.ng.0001.use1.cache.amazonaws.com
+REDIS_PORT=6379
+
+# Notifications
+SLACK_WEBHOOK=https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX
+
+# OIDC
+AWS_ROLE_ARN=arn:aws:iam::XXXXXXXXXXXX:role/github-actions-role
+```
 
 ---
 
