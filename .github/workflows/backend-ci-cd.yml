@@ -60,8 +60,8 @@ jobs:
       - name: Security scan with gosec
         run: |
           go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -fmt=json -out=gosec-report.json -no-fail ./...
-        continue-on-error: true
+          gosec -fmt=json -out=gosec-report.json ./...
+        continue-on-error: false
 
   build-and-deploy:
     name: Build & Deploy
@@ -111,9 +111,8 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image --severity HIGH,CRITICAL \
+            aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 \
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        continue-on-error: true
 
       - name: Push Docker image to ECR
         env:
@@ -139,6 +138,17 @@ jobs:
           S3_KEY="${{ env.ENVIRONMENT }}/backend-${{ github.sha }}-${TIMESTAMP}.zip"
           aws s3 cp deployment.zip s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}/${S3_KEY}
           echo "S3_KEY=${S3_KEY}" >> $GITHUB_ENV
+
+      - name: Ensure CloudWatch Log Group exists
+        run: |
+          LOG_GROUP_NAME="/aws/ec2/${{ env.ENVIRONMENT }}/backend"
+          if ! aws logs describe-log-groups --log-group-name-prefix "$LOG_GROUP_NAME" --query 'logGroups[?logGroupName==`'"$LOG_GROUP_NAME"'`]' --output text | grep -q "$LOG_GROUP_NAME"; then
+            echo "Creating CloudWatch log group: $LOG_GROUP_NAME"
+            aws logs create-log-group --log-group-name "$LOG_GROUP_NAME" || true
+            aws logs put-retention-policy --log-group-name "$LOG_GROUP_NAME" --retention-in-days 7
+          else
+            echo "CloudWatch log group already exists: $LOG_GROUP_NAME"
+          fi
 
       - name: Create CodeDeploy deployment
         id: deploy
