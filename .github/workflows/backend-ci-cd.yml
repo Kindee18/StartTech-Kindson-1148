@@ -135,7 +135,9 @@ jobs:
       - name: Upload to S3
         run: |
           TIMESTAMP=$(date +%s)
-          S3_KEY="${{ env.ENVIRONMENT }}/backend-${{ github.sha }}-${TIMESTAMP}.zip"
+          ENV_NAME="${{ env.ENVIRONMENT }}"
+          COMMIT_SHA="${{ github.sha }}"
+          S3_KEY="${ENV_NAME}/backend-${COMMIT_SHA}-${TIMESTAMP}.zip"
           aws s3 cp deployment.zip s3://${{ secrets.CODEDEPLOY_S3_BUCKET }}/${S3_KEY}
           echo "S3_KEY=${S3_KEY}" >> $GITHUB_ENV
 
@@ -152,11 +154,13 @@ jobs:
 
       - name: Create CodeDeploy deployment
         id: deploy
+        env:
+          S3_KEY: ${{ env.S3_KEY }}
         run: |
           DEPLOYMENT_ID=$(aws deploy create-deployment \
             --application-name ${{ secrets.CODEDEPLOY_APP }} \
             --deployment-group-name ${{ env.CODEDEPLOY_GROUP }} \
-            --s3-location bucket=${{ secrets.CODEDEPLOY_S3_BUCKET }},key=${{ env.S3_KEY }},bundleType=zip \
+            --s3-location bucket=${{ secrets.CODEDEPLOY_S3_BUCKET }},key=${S3_KEY},bundleType=zip \
             --description "Deployment for commit ${{ github.sha }} to ${{ env.ENVIRONMENT }}" \
             --query 'deploymentId' \
             --output text)
