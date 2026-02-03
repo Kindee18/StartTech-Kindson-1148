@@ -3,10 +3,20 @@ set -e
 
 echo "Running after install tasks..."
 
+# Load configuration from User Data
+if [ -f /etc/starttech/config.env ]; then
+    source /etc/starttech/config.env
+else
+    echo "ERROR: Config file /etc/starttech/config.env not found!"
+    exit 1
+fi
+
 cd /opt/muchtodo
 
-# Get AWS region from instance metadata
-export AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+# Get AWS region from instance metadata if not set
+if [ -z "$AWS_REGION" ]; then
+    export AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+fi
 
 # Login to ECR
 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
