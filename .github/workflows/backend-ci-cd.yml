@@ -7,6 +7,8 @@ on:
       - develop
     paths:
       - "Server/**"
+      - "scripts/**"
+      - "appspec.yml"
       - ".github/workflows/backend-ci-cd.yml"
   pull_request:
     branches:
