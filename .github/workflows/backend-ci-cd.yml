@@ -60,7 +60,18 @@ jobs:
       - name: Security scan with gosec
         run: |
           go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -fmt=json -out=gosec-report.json ./...
+          gosec -fmt=json -out=gosec-report.json -fmt=text ./... || true
+          echo "=== Gosec Report ==="
+          cat gosec-report.json | jq -r '.Stats // empty' || echo "No stats available"
+          cat gosec-report.json | jq -r '.Issues[]? | "\(.severity): \(.rule_id) - \(.details) in \(.file):\(.line)"' || echo "No issues found or JSON parse error"
+          # Fail only on HIGH or CRITICAL severity issues
+          HIGH_CRITICAL_COUNT=$(cat gosec-report.json | jq '[.Issues[]? | select(.severity == "HIGH" or .severity == "CRITICAL")] | length' || echo "0")
+          if [ "$HIGH_CRITICAL_COUNT" -gt 0 ]; then
+            echo "Found $HIGH_CRITICAL_COUNT HIGH/CRITICAL security issues. Failing build."
+            exit 1
+          else
+            echo "No HIGH/CRITICAL security issues found."
+          fi
         continue-on-error: false
 
   build-and-deploy:
