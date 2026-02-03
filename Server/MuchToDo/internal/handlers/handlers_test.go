@@ -72,12 +72,12 @@ func (s *UserHandlerIntegrationTestSuite) SetupSuite() {
 
 	// Create a test config
 	s.cfg = config.Config{
-		MongoURI:         mongoURI,
-		DBName:           "testdb",
-		EnableCache:      true,
-		RedisAddr:        redisAddr, // Use the corrected address
-		JWTSecretKey:     "a-secure-test-secret-key-that-is-long",
-		JWTExpirationHours: 1,
+		MongoURI:            mongoURI,
+		DBName:              "testdb",
+		EnableCache:         true,
+		RedisAddr:           redisAddr, // Use the corrected address
+		JWTSecretKey:        "a-secure-test-secret-key-that-is-long",
+		JWTExpirationHours:  1,
 	}
 
 	// Connect to the test database
