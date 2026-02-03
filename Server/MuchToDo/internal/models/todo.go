@@ -1,7 +1,8 @@
 package models
 
 import (
-	"time" // Import the standard time package
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -28,4 +29,3 @@ type UpdateTodoDTO struct {
 	Description *string `json:"description"`
 	Completed   *bool   `json:"completed"`
 }
-
