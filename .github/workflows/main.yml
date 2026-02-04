@@ -15,15 +15,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Security Scanning
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'starttech-app:${{ github.sha }}'
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -37,5 +28,14 @@ jobs:
 
       - name: Build and Push Backend
         run: |
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/starttech-backend:latest .
-          docker push ${{ steps.login-ecr.outputs.registry }}/starttech-backend:latest
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/dev-starttech-backend:latest .
+          docker push ${{ steps.login-ecr.outputs.registry }}/dev-starttech-backend:latest
+
+      # Security Scanning (scan the image from ECR after push)
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ steps.login-ecr.outputs.registry }}/dev-starttech-backend:latest'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
