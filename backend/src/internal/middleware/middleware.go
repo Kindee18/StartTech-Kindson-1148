@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/auth"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/config"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/utils"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/auth"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/config"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 

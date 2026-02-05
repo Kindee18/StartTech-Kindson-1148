@@ -7,7 +7,7 @@ import (
 	// "strconv"
 	"time"
 
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/config"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/config"
 	"github.com/redis/go-redis/v9"
 )
 

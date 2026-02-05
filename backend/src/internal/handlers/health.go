@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/cache"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/cache"
 )
 
 // HealthHandler holds dependencies for health checks.

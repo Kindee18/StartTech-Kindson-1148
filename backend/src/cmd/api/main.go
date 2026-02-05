@@ -30,17 +30,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/auth"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/cache"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/config"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/database"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/handlers"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/logger"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/middleware"
-	"github.com/Innocent9712/much-to-do/Server/MuchToDo/internal/routes"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/auth"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/cache"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/config"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/database"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/handlers"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/logger"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/middleware"
+	"github.com/Innocent9712/much-to-do/Server/MuchToDo/src/internal/routes"
 
 	// Swagger imports
-	_ "github.com/Innocent9712/much-to-do/Server/MuchToDo/docs" // This is required for swag to find your docs
+	_ "github.com/Innocent9712/much-to-do/Server/MuchToDo/src/docs" // This is required for swag to find your docs
 )
 
 const usernameCacheSentinelKey = "username_cache_initialized"

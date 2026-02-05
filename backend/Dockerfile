@@ -15,12 +15,12 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Generate Swagger documentation
+# Copy and build logic
 RUN go install github.com/swaggo/swag/cmd/swag@latest && \
-    swag init -g cmd/api/main.go || true
+    cd src && swag init -g cmd/api/main.go || true
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
+RUN cd src && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ../main ./cmd/api
 
 # Production stage - minimal image
 FROM alpine:latest
