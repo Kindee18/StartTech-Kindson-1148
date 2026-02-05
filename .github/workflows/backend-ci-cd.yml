@@ -6,7 +6,7 @@ on:
       - main
       - develop
     paths:
-      - "Server/**"
+      - "backend/**"
       - "scripts/**"
       - "appspec.yml"
       - ".github/workflows/backend-ci-cd.yml"
@@ -15,8 +15,6 @@ on:
       - main
       - develop
   workflow_dispatch:
-    paths:
-      - "Server/**"
 
 permissions:
   id-token: write
@@ -31,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Server/MuchToDo
+        working-directory: backend
 
     steps:
       - name: Checkout code
@@ -41,7 +39,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: Server/MuchToDo/go.sum
+          cache-dependency-path: backend/go.sum
 
       - name: Install dependencies
         run: go mod download
@@ -80,7 +78,7 @@ jobs:
   build-and-deploy:
     name: Build & Deploy
     needs: test
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -108,7 +106,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
-        working-directory: Server/MuchToDo
+        working-directory: backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_BACKEND }}
@@ -202,12 +200,10 @@ jobs:
         if: success()
         run: |
           echo "✅ Backend deployed successfully to ${{ env.ENVIRONMENT }}"
-          echo "Deployment ID: ${{ steps.deploy.outputs.deployment_id }}"
           echo "Image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_BACKEND }}:${{ github.sha }}"
 
       - name: Deployment failure notification
         if: failure()
         run: |
           echo "❌ Backend deployment failed for ${{ env.ENVIRONMENT }}"
-          echo "Consider rolling back deployment ${{ steps.deploy.outputs.deployment_id }}"
           exit 1
