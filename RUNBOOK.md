@@ -152,7 +152,7 @@ HTTPS                ElastiCache Redis (Sessions)
    - Start instance refresh (rolling update)
    - Wait for deployment
    - Run smoke tests (health endpoint)
-   - Send Slack notifications
+
 
 **Success Criteria:**
 
@@ -204,8 +204,6 @@ MONGODB_DATABASE=muchtodo
 REDIS_HOST=redis.XXXXXXXXXXXX.ng.0001.use1.cache.amazonaws.com
 REDIS_PORT=6379
 
-# Notifications
-SLACK_WEBHOOK=https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX
 
 # OIDC
 AWS_ROLE_ARN=arn:aws:iam::XXXXXXXXXXXX:role/github-actions-role
