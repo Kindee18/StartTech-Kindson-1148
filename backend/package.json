@@ -1,5 +1,4 @@
 {
-    "$schema": "https://json.schemastore.org/package.json",
     "name": "muchtodo-backend",
     "version": "1.0.0",
     "description": "MuchToDo Backend API - Go Application",
