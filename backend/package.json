@@ -1,10 +1,23 @@
 {
+    "$schema": "https://json.schemastore.org/package.json",
     "name": "muchtodo-backend",
     "version": "1.0.0",
-    "description": "Backend API for MuchToDo",
-    "main": "index.js",
+    "description": "MuchToDo Backend API - Go Application",
+    "main": "main",
     "scripts": {
-        "start": "pm2 start ecosystem.config.js"
+        "start": "go run cmd/api/main.go",
+        "build": "go build -o main cmd/api/main.go",
+        "test": "go test ./..."
     },
-    "dependencies": {}
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Kindee18/StartTech-Kindson-1148"
+    },
+    "keywords": [
+        "golang",
+        "api",
+        "backend"
+    ],
+    "author": "StartTech",
+    "license": "MIT"
 }
