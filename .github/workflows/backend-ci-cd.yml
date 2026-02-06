@@ -139,7 +139,7 @@ jobs:
 
       - name: Deploy to ASG (Instance Refresh)
         run: |
-          ASG_NAME="${ENVIRONMENT}-backend-asg"
+          ASG_NAME="dev-backend-asg"
           echo "Triggering instance refresh for ${ASG_NAME}..."
           
           # Trigger instance refresh
