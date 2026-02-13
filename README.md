@@ -2,7 +2,12 @@
 
 
 > [!NOTE]
-> **Deployment Status**: Use of live resources (ALB, RDS, CloudFront) has been suspended to avoid ongoing AWS costs. The application can still be run locally or redeployed to AWS using the provided CI/CD workflows.
+> **Deployment Status**: Use of live resources (ALB, RDS, CloudFront) has been suspended to avoid ongoing AWS costs.
+>
+> **To Redeploy (Restore System):**
+> 1. Run **Infrastructure Deployment** workflow (creates servers/DBs).
+> 2. Run **Backend CI/CD** workflow (builds Docker image & pushes to ECR).
+> 3. Run **Frontend CI/CD** workflow (builds React app & uploads to S3).
 
 A full-stack task management application with automated CI/CD deployment to AWS.
 
