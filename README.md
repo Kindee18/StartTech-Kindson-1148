@@ -5,9 +5,10 @@
 > **Deployment Status**: Use of live resources (ALB, RDS, CloudFront) has been suspended to avoid ongoing AWS costs.
 >
 > **To Redeploy (Restore System):**
-> 1. Run [Infrastructure Deployment](https://github.com/Kindee18/StartTech-Infra-Kindson-1148/blob/main/.github/workflows/infrastructure-deploy.yml) workflow (creates servers/DBs).
-> 2. Run [Backend CI/CD](.github/workflows/backend-ci-cd.yml) workflow (builds Docker image & pushes to ECR).
-> 3. Run [Frontend CI/CD](.github/workflows/frontend-ci-cd.yml) workflow (builds React app & uploads to S3).
+> 1. **(If destroyed)** Run `./scripts/restore-oidc.sh` in your **Infrastructure Repository** locally.
+> 2. Run [Infrastructure Deployment](https://github.com/Kindee18/StartTech-Infra-Kindson-1148/blob/main/.github/workflows/infrastructure-deploy.yml) workflow (creates servers/DBs).
+> 3. Run [Backend CI/CD](.github/workflows/backend-ci-cd.yml) workflow (builds Docker image & pushes to ECR).
+> 4. Run [Frontend CI/CD](.github/workflows/frontend-ci-cd.yml) workflow (builds React app & uploads to S3).
 
 A full-stack task management application with automated CI/CD deployment to AWS.
 
