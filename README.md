@@ -400,3 +400,7 @@ This project is licensed under the MIT License.
 
 **Last Updated**: 2026-01-25
 **Version**: 1.0.0
+
+## 🔗 Related Repositories
+
+- **Infrastructure Repo**: [StartTech-Infra-Kindson-1148](https://github.com/Kindee18/StartTech-Infra-Kindson-1148)
