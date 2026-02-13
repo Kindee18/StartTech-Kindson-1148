@@ -1,5 +1,9 @@
 # StartTech MuchToDo Application
 
+
+> [!NOTE]
+> **Deployment Status**: Use of live resources (ALB, RDS, CloudFront) has been suspended to avoid ongoing AWS costs. The application can still be run locally or redeployed to AWS using the provided CI/CD workflows.
+
 A full-stack task management application with automated CI/CD deployment to AWS.
 
 ## 📋 Table of Contents
